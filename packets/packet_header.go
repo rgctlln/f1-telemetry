@@ -11,7 +11,7 @@ type PacketHeader struct {
 	GameMajorVersion        uint8   // Game major version (e.g., X.00)
 	GameMinorVersion        uint8   // Game minor version (e.g., 1.XX)
 	PacketVersion           uint8   // Version of this packet type (starts at 1)
-	PacketId                uint8   // Packet type identifier
+	PacketId                uint8   // Packet type identifier (0 - 14)
 	SessionUID              uint64  // Unique identifier for the session
 	SessionTime             float32 // Session timestamp
 	FrameIdentifier         uint32  // Identifier of the frame when data was retrieved

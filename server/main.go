@@ -31,6 +31,7 @@ func main() {
 		}
 	}(conn)
 
+	// Starts listening procedure
 	err = udp.StartListening(conn, addr)
 	if err != nil {
 		log.Fatal(err)
