@@ -2,6 +2,7 @@ package packets
 
 import (
 	"encoding/binary"
+	"math"
 )
 
 // TODO add appendix
@@ -26,13 +27,21 @@ type PacketSessionData struct {
 	GamePaused        uint8
 	IsSpectating      uint8
 	SpectatorCarIndex uint8
+	Sector1Length     float32
+	Sector2Length     float32
+	Sector3Length     float32
 }
 
 // Size: 753 bytes
 // Frequency: 2 per second
 func ParseSessionPacket(data []byte) PacketSessionData {
 	header := ParseHeader(data)
-	// 28 - last header idx
+
+	tail := data[len(data)-8:]
+	sector2Start := math.Float32frombits(binary.LittleEndian.Uint32(tail[:4]))
+	sector3Start := math.Float32frombits(binary.LittleEndian.Uint32(tail[4:]))
+
+	trackLength := binary.LittleEndian.Uint16(data[33:35])
 
 	return PacketSessionData{
 		Header:            header,
@@ -40,15 +49,18 @@ func ParseSessionPacket(data []byte) PacketSessionData {
 		TrackTemperature:  int8(data[30]),
 		AirTemperature:    int8(data[31]),
 		TotalLaps:         data[32],
-		TrackLength:       binary.LittleEndian.Uint16(data[33:35]),
+		TrackLength:       trackLength,
 		SessionType:       data[35],
 		TrackId:           int8(data[36]),
 		Formula:           data[37],
 		SessionTimeLeft:   binary.LittleEndian.Uint16(data[38:40]),
 		SessionDuration:   binary.LittleEndian.Uint16(data[40:42]),
 		PitSpeedLimit:     data[42],
-		GamePaused:        data[42],
+		GamePaused:        data[43],
 		IsSpectating:      data[44],
 		SpectatorCarIndex: data[45],
+		Sector1Length:     sector2Start,
+		Sector2Length:     sector3Start - sector2Start,
+		Sector3Length:     float32(trackLength) - sector3Start,
 	}
 }
