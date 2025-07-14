@@ -21,6 +21,9 @@ type Config struct {
 		Host string `yaml:"host"`
 		Port int    `yaml:"port"`
 	}
+	Drawer struct {
+		TrackName string `yaml:"track_name"`
+	}
 }
 
 func ReadConfigYaml(cfg *Config) error {

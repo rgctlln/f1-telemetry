@@ -9,11 +9,18 @@ import (
 
 func parsePacket(header packets.PacketHeader, buffer []byte, trackMap map[uint8]struct{}) {
 	switch {
+	case header.PacketId == 0:
+		parsePacketID0(header, buffer)
 	case header.PacketId == 1:
 		parsePacketID1(header, buffer, trackMap)
 	case header.PacketId == 3:
-		parsePacketID3(header, buffer)
+		parsePacketID3(buffer)
 	}
+}
+
+func parsePacketID0(header packets.PacketHeader, buffer []byte) {
+	motion := packets.ParseMotionPacket(buffer)
+	fmt.Println(motion.CarMotionData[0].WorldPositionX, motion.CarMotionData[0].WorldPositionY, motion.CarMotionData[0].WorldPositionZ)
 }
 
 func parsePacketID1(header packets.PacketHeader, buffer []byte, trackMap map[uint8]struct{}) {
@@ -32,7 +39,7 @@ func parsePacketID1(header packets.PacketHeader, buffer []byte, trackMap map[uin
 		", temperature is " + strconv.Itoa(int(session.AirTemperature)) + "℃")
 }
 
-func parsePacketID3(header packets.PacketHeader, buffer []byte) {
+func parsePacketID3(buffer []byte) {
 	event := packets.ParseEventPacket(buffer)
 	fmt.Println(string(event.EventStringCode[:]))
 }
