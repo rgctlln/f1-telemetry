@@ -12,7 +12,7 @@ import (
 // WorldPositionX,Y,Z первой машины в файл ./tracks/<trackName>_2024_racingline.txt
 func GetTrackCoordinates(conn *net.UDPConn, trackName string) {
 	// Открываем (или создаём) файл в режиме append
-	path := fmt.Sprintf("./tracks/%s_2024_racingline.txt", trackName)
+	path := fmt.Sprintf("./tracks/generated_tracks/%s_2024_racingline.txt", trackName)
 	f, err := os.OpenFile(path,
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
@@ -35,11 +35,12 @@ func GetTrackCoordinates(conn *net.UDPConn, trackName string) {
 
 		// парсим MotionPacket
 		motion := packets.ParseMotionPacket(buf[:n])
+		playerCarIndex := motion.Header.PlayerCarIndex
 
 		// берём координаты первой машины
-		x := motion.CarMotionData[0].WorldPositionX
-		y := motion.CarMotionData[0].WorldPositionY
-		z := motion.CarMotionData[0].WorldPositionZ
+		x := motion.CarMotionData[playerCarIndex].WorldPositionX
+		y := motion.CarMotionData[playerCarIndex].WorldPositionY
+		z := motion.CarMotionData[playerCarIndex].WorldPositionZ
 
 		// дописываем в файл
 		line := fmt.Sprintf("%f,%f,%f\n", x, y, z)

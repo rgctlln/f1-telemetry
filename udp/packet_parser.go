@@ -10,9 +10,13 @@ import (
 func parsePacket(header packets.PacketHeader, buffer []byte, trackMap map[uint8]struct{}) {
 	switch {
 	case header.PacketId == 0:
-		parsePacketID0(header, buffer)
+		//parsePacketID0(header, buffer)
 	case header.PacketId == 1:
-		parsePacketID1(header, buffer, trackMap)
+		//parsePacketID1(header, buffer, trackMap)
+	case header.PacketId == 2:
+		fmt.Println()
+		lapData := packets.ParseLapDataPacket(buffer)
+		fmt.Println(lapData.LapData[lapData.Header.PlayerCarIndex])
 	case header.PacketId == 3:
 		parsePacketID3(buffer)
 	}
