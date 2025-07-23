@@ -9,6 +9,8 @@ import (
 	"sync"
 )
 
+//TODO add description how this class works
+
 // Listens conn and gets WorldPositionX,Y,Z and writes to ./tracks/<trackName>_2024_racingline.txt
 func GetTrackCoordinates(conn *net.UDPConn, trackName string) {
 	path := fmt.Sprintf("./tracks/generated_tracks/%s_2024_racingline.txt", trackName)
@@ -34,7 +36,6 @@ func GetTrackCoordinates(conn *net.UDPConn, trackName string) {
 		}
 	}
 
-	// Открытие файла
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatalf("failed to open %s: %v", path, err)
@@ -44,6 +45,10 @@ func GetTrackCoordinates(conn *net.UDPConn, trackName string) {
 			log.Fatalf("failed to close file: %v", err)
 		}
 	}()
+
+	if _, err = fmt.Fprint(f, "x,y,z,dist\n"); err != nil {
+		log.Fatalf("failed to write to file: %v", err)
+	}
 
 	buffer := make([]byte, 2048)
 	once := sync.Once{}
@@ -110,6 +115,12 @@ collector:
 
 			lapData := packets.ParseLapDataPacket(buffer[:ln])
 			if lapData.LapData[header.PlayerCarIndex].CurrentLapNum == 3 {
+				if collected {
+					err = removeLastLine(f.Name())
+					if err != nil {
+						log.Fatalf("Unable to remove last line from file: %v", err)
+					}
+				}
 				return
 			}
 
@@ -140,4 +151,51 @@ collector:
 			collected = true
 		}
 	}
+}
+
+func removeLastLine(path string) error {
+	file, err := os.OpenFile(path, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("Error closing file: %v", err)
+		}
+	}(file)
+
+	stat, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	size := stat.Size()
+	if size == 0 {
+		return nil
+	}
+
+	var truncateAt int64 = -1
+	buf := make([]byte, 1)
+
+	for i := size - 1; i >= 0; i-- {
+		_, err := file.ReadAt(buf, i)
+		if err != nil {
+			return err
+		}
+
+		if buf[0] == '\n' {
+			if i == size-1 {
+				continue
+			}
+
+			truncateAt = i + 1
+			break
+		}
+	}
+
+	if truncateAt == -1 {
+		truncateAt = 0
+	}
+
+	return file.Truncate(truncateAt)
 }

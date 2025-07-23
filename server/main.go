@@ -45,12 +45,13 @@ func main() {
 		log.Println("Track drawing mode is enabled")
 		drwMode(addr, cfg.Drawer.TrackName)
 	} else {
-		log.Println("Track drawing mode is disabled")
+		log.Print("Track drawing mode is disabled")
 		udpMode(addr)
 	}
 }
 
 func drwMode(addr net.UDPAddr, trackName string) {
+	// Connects to client through udp
 	conn, err := net.ListenUDP("udp", &addr)
 	if err != nil {
 		log.Fatal(err)
@@ -63,6 +64,7 @@ func drwMode(addr net.UDPAddr, trackName string) {
 		}
 	}(conn)
 
+	// Gets track coordinates (x,y,z,dist)
 	tracks.GetTrackCoordinates(conn, trackName)
 }
 
